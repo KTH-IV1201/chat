@@ -1,2 +1,3 @@
-# sem4-chat
-Example program for seminar four
+# Example program for seminar four
+
+This is the seminar four version of the chat sample program.
