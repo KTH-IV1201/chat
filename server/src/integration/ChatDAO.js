@@ -17,7 +17,8 @@ class ChatDAO {
         process.env.DB_PASS,
         {host: process.env.DB_HOST, dialect: process.env.DB_DIALECT}
     );
-    this.createTables();
+    this.modelNames = new Models();
+    this.models = this.modelNames.createAllModels(this.database);
   }
 
   /**
@@ -25,9 +26,6 @@ class ChatDAO {
    */
   async createTables() {
     try {
-      Models.allModels().values.forEach((model) =>
-        model.createModel(this.database)
-      );
       await this.database.authenticate();
       await this.database.sync({force: false});
     } catch (err) {
@@ -46,14 +44,16 @@ class ChatDAO {
    *
    * @param {string} username The username of the searched user.
    * @return {object} An array containing all users with the
-   *                  specified username.
+   *                  specified username. Each element in the returned
+   *                  array is a model.dataValue sequelize object. The array
+   *                  is empty if no matching users were found.
    */
   async findUserByUsername(username) {
-    const userModel = Models.allModels[Models.USER_MODEL_NAME];
+    const user = this.models[this.modelNames.USER_MODEL_NAME];
     try {
-      return await userModel.findAll({
+      return await user.findAll({
         where: {username: username},
-      });
+      }).map((userModel) => userModel.dataValues);
     } catch (err) {
       throw new WError(
           {

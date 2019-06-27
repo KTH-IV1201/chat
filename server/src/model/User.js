@@ -3,29 +3,33 @@ const Sequelize = require('sequelize');
 /**
  * A User of the chat application.
  */
-class User extends Sequelize.Model {
+class User {
   /**
    * The name of the User model.
    */
-  get USER_MODEL_NAME() {
+  static get USER_MODEL_NAME() {
     return 'user';
   }
 
   /**
    * Defines the user entity.
    *
-   * @param {Sequelize} db The sequelize object.
+   * @param {Sequelize} sequelize The sequelize object.
+   * @return {Model} A sequelize model describing the user entity.
    */
-  static createModel(db) {
-    init(
+  static createModel(sequelize) {
+    // eslint-disable-next-line require-jsdoc
+    class UserModel extends Sequelize.Model {} // eslint-disable-line max-len
+    UserModel.init(
         {
           userName: {
             type: Sequelize.STRING,
             allowNull: false,
           },
         },
-        {db, modelName: USER_MODEL_NAME}
+        {sequelize, modelName: User.USER_MODEL_NAME}
     );
+    return UserModel;
   }
 }
 

@@ -12,12 +12,15 @@ class Models {
   }
 
   /**
-   * @return {object} A object containing all models. Property names are the
-   *                  model names, and property values are the models.
+   * Creates all sequelize models.
+   *
+   * @param {Sequelize} db The sequelize object.
+   * @return {object} A object containing all sequelize models. Property names
+   *                  are the model names, and property values are the models.
    */
-  static allModels() {
-    models = {};
-    models[User.USER_MODEL_NAME] = User;
+  createAllModels(db) {
+    const models = {};
+    models[User.USER_MODEL_NAME] = User.createModel(db);
     return models;
   }
 }
