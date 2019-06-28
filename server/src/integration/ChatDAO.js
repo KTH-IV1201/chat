@@ -1,6 +1,7 @@
 const Sequelize = require('sequelize');
 const WError = require('verror').WError;
 const Models = require('../model');
+const User = require('../model/User');
 
 /**
  * This class is responsible for all calls to the database. There shall not
@@ -49,11 +50,21 @@ class ChatDAO {
    *                  is empty if no matching users were found.
    */
   async findUserByUsername(username) {
-    const user = this.models[this.modelNames.USER_MODEL_NAME];
+    const userModel = this.models[this.modelNames.USER_MODEL_NAME];
     try {
-      return await user.findAll({
-        where: {username: username},
-      }).map((userModel) => userModel.dataValues);
+      return await userModel
+          .findAll({
+            where: {username: username},
+          })
+          .map(
+              (userModel) =>
+                new User(
+                    userModel.dataValues.id,
+                    userModel.dataValues.username,
+                    userModel.dataValues.createdAt,
+                    userModel.dataValues.updatedAt
+                )
+          );
     } catch (err) {
       throw new WError(
           {
@@ -66,6 +77,18 @@ class ChatDAO {
           `Could not serach for user ${username}.`
       );
     }
+  }
+
+  /**
+   * Updates the user with the id of the specified User object. All fields
+   * present in the specified User object are updated.
+   *
+   * @param {User} user The new state of the user instance.
+   */
+  async updateUser(user) {
+    await this.models[this.modelNames.USER_MODEL_NAME].update(user, {
+      where: {id: user.id},
+    });
   }
 }
 

@@ -28,15 +28,17 @@ class Controller {
    * only check that is performed is that the username exists in the database.
    *
    * @param {string} username: The username of the user logging in.
-   * @return {boolean} true if there is a user with the specified username,
-   *                   otherwise false.
+   * @return {User} The logged in user if login succeeded, or null if login
+   *                failed.
    */
   async login(username) {
     const users = await this.chatDAO.findUserByUsername(username);
     if (users.length === 0) {
-      return false;
+      return null;
     }
-    return true;
+    const loggedInUser = users[0];
+    loggedInUser.loggedInUntil = new Date(now + 30 min);
+    return loggedInUser;
   };
 }
 

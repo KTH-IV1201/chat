@@ -1,9 +1,9 @@
-const RequestHandler = require('../RequestHandler');
+const ErrorHandler = require('../RequestHandler');
 
 /**
  * Logs all exceptions that arrive at an express router.
  */
-class ErrorLogger extends RequestHandler {
+class ErrorLogger extends ErrorHandler {
   /**
    * Creates a new instance.
    */
@@ -21,16 +21,19 @@ class ErrorLogger extends RequestHandler {
   /**
    * Registers the request handling function, which will log
    * the caught exception.
+   *
+   * @param {Application} app The express application hosting the
+   *                          error handler.
    */
-  registerHandler() {
+  registerHandler(app) {
     /*
      * Logs errors to the console.
      */
-    this.router.use((err, req, res, next) => {
+    app.use(this.path, (err, req, res, next) => {
       this.logger.logException(err);
       next(err);
     });
-  };
+  }
 }
 
 module.exports = ErrorLogger;

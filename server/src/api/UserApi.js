@@ -1,7 +1,9 @@
+const jwt = require('jsonwebtoken');
+const cookies = require('cookie-parser');
 const RequestHandler = require('./RequestHandler');
 
 /**
- * Defines the user handlig REST API.
+ * Defines the REST API with endpoints related to users.
  */
 class UserApi extends RequestHandler {
   /**
@@ -19,6 +21,32 @@ class UserApi extends RequestHandler {
   }
 
   /**
+   * Sends a cookie which proves that the user is logged in. This cookie will
+   * contain a JWT with the user's data.
+   *
+   * @param {User} user The user data that will be included in the JWT.
+   * @param {Response} res The express response object used to send the cookie.
+   */
+  sendAuthCookie(user, res) {
+    const notAccessibleFromJs = {httpOnly: true};
+    const isSessionCookie = {expires: 0};
+
+    const jwtToken = jwt.sign(
+        {id: user.id, username: user.username},
+        process.env.JWT_SECRET,
+        {
+          expiresIn: '30 minutes',
+        }
+    );
+
+    const cookieOptions = {
+      ...notAccessibleFromJs,
+      ...isSessionCookie,
+    };
+    res.cookie('chatId', jwtToken, cookieOptions);
+  }
+
+  /**
    * Registers the request handling functions.
    */
   async registerHandler() {
@@ -31,19 +59,25 @@ class UserApi extends RequestHandler {
        *
        * parameter username: The username is also used as display name.
        */
-      this.router.post('/login', async (req, res) => {
-        if (!req.body.username) {
-          return res.status(400).send('fields are missing');
-        }
+      this.router.post('/login', async (req, res, next) => {
+        try {
+          if (!req.body.username) {
+            return res.status(400).send('fields are missing');
+          }
 
-        if (await this.contr.login(req.body.username)) {
-          return res.status(200).send('login ok');
-        } else {
-          return res.status(401).send('Login failed');
+          const loggedInUser = await this.contr.login(req.body.username);
+          if (loggedInUser === null) {
+            return res.status(401).send('Login failed');
+          } else {
+            this.sendAuthCookie(loggedInUser, res);
+            return res.status(200).send('login ok');
+          }
+        } catch (err) {
+          next(err);
         }
       });
     } catch (err) {
-      this.logger.logException(err);
+      next(err);
     }
   }
 }

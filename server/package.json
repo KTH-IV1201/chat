@@ -16,7 +16,9 @@
     "sequelize": "^5.8.12",
     "mariadb": "^2.0.5",
     "body-parser": "^1.19.0",
-    "verror": "^1.10.0"
+    "verror": "^1.10.0",
+    "jsonwebtoken": "^8.5.1",
+    "cookie-parser": "^1.4.4"
   },
   "devDependencies": {
     "eslint": "^6.0.0",
