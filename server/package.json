@@ -18,7 +18,8 @@
     "body-parser": "^1.19.0",
     "verror": "^1.10.0",
     "jsonwebtoken": "^8.5.1",
-    "cookie-parser": "^1.4.4"
+    "cookie-parser": "^1.4.4",
+    "moment": "^2.24.0"
   },
   "devDependencies": {
     "eslint": "^6.0.0",

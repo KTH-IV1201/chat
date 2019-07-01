@@ -12,9 +12,9 @@ class ErrorLogger extends ErrorHandler {
   }
 
   /**
-   * @return {string} The URL paths handled by this logger.
+   * @return {string} The URL paths handled by this error handler.
    */
-  path() {
+  get path() {
     return '/';
   }
 

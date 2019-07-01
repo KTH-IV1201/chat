@@ -1,7 +1,8 @@
 const Sequelize = require('sequelize');
 const WError = require('verror').WError;
-const Models = require('../model');
+const UserDTO = require('../model/UserDTO');
 const User = require('../model/User');
+const Msg = require('../model/Msg');
 
 /**
  * This class is responsible for all calls to the database. There shall not
@@ -18,8 +19,10 @@ class ChatDAO {
         process.env.DB_PASS,
         {host: process.env.DB_HOST, dialect: process.env.DB_DIALECT}
     );
-    this.modelNames = new Models();
-    this.models = this.modelNames.createAllModels(this.database);
+    // this.modelNames = new Models();
+    // this.models = this.modelNames.createAllModels(this.database);
+    User.createModel(this.database);
+    Msg.createModel(this.database);
   }
 
   /**
@@ -50,21 +53,19 @@ class ChatDAO {
    *                  is empty if no matching users were found.
    */
   async findUserByUsername(username) {
-    const userModel = this.models[this.modelNames.USER_MODEL_NAME];
+    // const userModel = this.models[this.modelNames.USER_MODEL_NAME];
     try {
-      return await userModel
-          .findAll({
-            where: {username: username},
-          })
-          .map(
-              (userModel) =>
-                new User(
-                    userModel.dataValues.id,
-                    userModel.dataValues.username,
-                    userModel.dataValues.createdAt,
-                    userModel.dataValues.updatedAt
-                )
-          );
+      return await User.findAll({
+        where: {username: username},
+      }).map(
+          (userModel) =>
+            new UserDTO(
+                userModel.dataValues.id,
+                userModel.dataValues.username,
+                userModel.dataValues.createdAt,
+                userModel.dataValues.updatedAt
+            )
+      );
     } catch (err) {
       throw new WError(
           {
@@ -83,12 +84,26 @@ class ChatDAO {
    * Updates the user with the id of the specified User object. All fields
    * present in the specified User object are updated.
    *
-   * @param {User} user The new state of the user instance.
+   * @param {UserDTO} user The new state of the user instance.
    */
   async updateUser(user) {
-    await this.models[this.modelNames.USER_MODEL_NAME].update(user, {
+    await User.update(user, {
       where: {id: user.id},
     });
+  }
+
+  /**
+   * Adds the specified message to the conversation.
+   *
+   * @param {string} msg The message to add.
+   * @param {User} author The message author.
+   */
+  async createMsg(msg, author) {
+    const msgEntityInstance = await Msg.create({msg: msg});
+    const usersWithAuthorsUsername = await this.findUserByUsername(
+        author.username
+    );
+    await msgEntityInstance.setUser(usersWithAuthorsUsername[0].id);
   }
 }
 

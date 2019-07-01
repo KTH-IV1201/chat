@@ -1,4 +1,5 @@
 const UserApi = require('./UserApi');
+const MsgApi = require('./MsgApi');
 const ErrorLogger = require('./error/ErrorLogger');
 const ErrorResponseSender = require('./error/ErrorResponseSender');
 
@@ -42,7 +43,7 @@ class RequestHandlerLoader {
   loadHandlers(app) {
     this.reqHandlers.forEach((reqHandler) => {
       reqHandler.registerHandler();
-      app.use(reqHandler.path(), reqHandler.router);
+      app.use(reqHandler.path, reqHandler.router);
     });
   }
 
@@ -63,6 +64,7 @@ class RequestHandlerLoader {
 
 const loader = new RequestHandlerLoader();
 loader.addRequestHandler(new UserApi());
+loader.addRequestHandler(new MsgApi());
 loader.addErrorHandler(new ErrorLogger());
 loader.addErrorHandler(new ErrorResponseSender());
 

@@ -1,3 +1,5 @@
+const moment = require('moment');
+moment().format();
 const ChatDAO = require('../integration/ChatDAO');
 
 /**
@@ -37,9 +39,44 @@ class Controller {
       return null;
     }
     const loggedInUser = users[0];
-    loggedInUser.loggedInUntil = new Date(now + 30 min);
+    await this.setUsersStatusToLoggedIn(users[0]);
     return loggedInUser;
-  };
-}
+  }
 
+  /**
+   * Checks if the specified user is logged in. Returns true if the user is
+   * logged in and false if the user is not logged in.
+   *
+   * @param {string} username: The username of the user logging in.
+   * @return {boolean} true if the user is logged in, false if the user is
+   *                   not logged in.
+   */
+  async isLoggedIn(username) {
+    const users = await this.chatDAO.findUserByUsername(username);
+    if (users.length === 0) {
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Adds the specified message to the conversation.
+   *
+   * @param {string} msg The message to add.
+   * @param {User} author The message author.
+   */
+  async addMsg(msg, author) {
+    await this.chatDAO.createMsg(msg, author);
+  }
+
+  /*
+   * only 'private' helper methods below
+   */
+  // eslint-disable-next-line require-jsdoc
+  async setUsersStatusToLoggedIn(user) {
+    const periodToStayLoggedIn = moment.duration({hours: 24});
+    user.loggedInUntil = new Date(moment() + periodToStayLoggedIn);
+    await this.chatDAO.updateUser(user);
+  }
+}
 module.exports = Controller;

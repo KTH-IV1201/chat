@@ -13,9 +13,9 @@ class ErrorResponseSender extends ErrorHandler {
   }
 
   /**
-   * @return {string} The URL paths handled by this logger.
+   * @return {string} The URL paths handled by this error handler.
    */
-  path() {
+  get path() {
     return '/';
   }
 
@@ -29,6 +29,7 @@ class ErrorResponseSender extends ErrorHandler {
    */
   registerHandler(app) {
     /*
+     * Returns error message.
      */
     app.use(this.path, (err, req, res, next) => {
       if (res.headersSent) {
