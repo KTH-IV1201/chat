@@ -1,3 +1,5 @@
+'use strict';
+
 const Sequelize = require('sequelize');
 
 /**
@@ -30,7 +32,7 @@ class User extends Sequelize.Model {
             defaultValue: 0,
           },
         },
-        {sequelize, modelName: User.USER_MODEL_NAME}
+        {sequelize, modelName: User.USER_MODEL_NAME, paranoid: true}
     );
     return User;
   }

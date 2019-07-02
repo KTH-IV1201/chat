@@ -1,3 +1,6 @@
+'use strict';
+
+const assert = require('assert').strict;
 const moment = require('moment');
 moment().format();
 const ChatDAO = require('../integration/ChatDAO');
@@ -32,6 +35,8 @@ class Controller {
    * @param {string} username: The username of the user logging in.
    * @return {User} The logged in user if login succeeded, or null if login
    *                failed.
+   * @throws Throws an exception if unable to attempt to login the specified
+   *         user.
    */
   async login(username) {
     const users = await this.chatDAO.findUserByUsername(username);
@@ -50,10 +55,20 @@ class Controller {
    * @param {string} username: The username of the user logging in.
    * @return {boolean} true if the user is logged in, false if the user is
    *                   not logged in.
+   * @throws Throws an exception if failed to verify whether the specified user
+   *         is logged in.
    */
   async isLoggedIn(username) {
     const users = await this.chatDAO.findUserByUsername(username);
     if (users.length === 0) {
+      return false;
+    }
+    const loginExpires = moment(users[0].loggedInUntil);
+    if (loginExpires === null) {
+      return false;
+    }
+    const now = moment();
+    if (loginExpires.isBefore(now)) {
       return false;
     }
     return true;
@@ -63,10 +78,48 @@ class Controller {
    * Adds the specified message to the conversation.
    *
    * @param {string} msg The message to add.
-   * @param {User} author The message author.
+   * @param {UserDTO} author The message author.
+   * @return {MsgDTO} The newly created message.
+   * @throws Throws an exception if failed to add the specified message.
    */
   async addMsg(msg, author) {
-    await this.chatDAO.createMsg(msg, author);
+    assert(
+        author instanceof UserDTO,
+        'argument "author" must be a UserDTO instance.'
+    );
+    return await this.chatDAO.createMsg(msg, author);
+  }
+
+  /**
+   * Returns the message with the specified id.
+   *
+   * @param {number} msgId The id of the searched message.
+   * @return {MsgDTO} The message with the specified id, or null if there was
+   *                  no such message.
+   * @throws Throws an exception if failed to search for the specified message.
+   */
+  async findMsg(msgId) {
+    assert.equal(typeof msgId, 'number', 'argument "msgId" must be a number.');
+    assert(
+        !isNaN(msgId) && msgId > 0,
+        'argument "msgId" must be a positive integer.'
+    );
+    return await this.chatDAO.findMsgById(msgId);
+  }
+
+  /**
+   * Deletes the message with the specified id.
+   *
+   * @param {number} msgId The id of the message that shall be deleted.
+   * @throws Throws an exception if failed to delete the specified message.
+   */
+  async deleteMsg(msgId) {
+    assert.equal(typeof msgId, 'number', 'argument "msgId" must be a number.');
+    assert(
+        !isNaN(msgId) && msgId > 0,
+        'argument "msgId" must be a positive integer.'
+    );
+    await this.chatDAO.deleteMsg(msgId);
   }
 
   /*

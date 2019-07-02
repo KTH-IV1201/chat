@@ -1,3 +1,5 @@
+'use strict';
+
 const Sequelize = require('sequelize');
 const User = require('./User');
 
@@ -28,7 +30,7 @@ class Msg extends Sequelize.Model {
             allowNull: false,
           },
         },
-        {sequelize, modelName: Msg.MSG_MODEL_NAME}
+        {sequelize, modelName: Msg.MSG_MODEL_NAME, paranoid: true}
     );
     Msg.belongsTo(User);
     return Msg;

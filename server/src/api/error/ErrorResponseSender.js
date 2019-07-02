@@ -1,3 +1,5 @@
+'use strict';
+
 const ErrorHandler = require('./ErrorHandler');
 
 /**

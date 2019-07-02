@@ -1,3 +1,5 @@
+'use strict';
+
 const UserApi = require('./UserApi');
 const MsgApi = require('./MsgApi');
 const ErrorLogger = require('./error/ErrorLogger');

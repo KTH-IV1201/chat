@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * A user of the chat application.
  */
@@ -13,23 +15,23 @@ class UserDTO {
    * @param {string} loggedInUntil Zero or null if the user is not logged in.
    *                               A nonzero value means the user is logged in
    *                               until the specified time.
-   * @param {string} createdAt The time when the user with the specified id was
-   *                           created. This property will be automatically
-   *                           generated when a new user is created. Any
-   *                           value specified when creating a new user will be
-   *                           ignored.
-   * @param {string} updatedAt The time when the user with the specified id was
-   *                           last updated. This property will be automatically
-   *                           generated when a new user is created. Any
-   *                           value specified when creating a new user will be
-   *                           ignored.
+   * @param {string} createdAt The time when the msg with the specified id was
+   *                           created. This property will be set
+   *                           automatically when a new msg is created.
+   * @param {string} updatedAt The time when the msg with the specified id was
+   *                           last updated. This property will be set
+   *                           automatically when a msg is updated.
+   * @param {string} deletedAt The time when the msg with the specified id was
+   *                           deleted, if it is deleted. This property will be
+   *                           set automatically when a msg is deleted.
    */
-  constructor(id, username, loggedInUntil, createdAt, updatedAt) {
+  constructor(id, username, loggedInUntil, createdAt, updatedAt, deletedAt) {
     this.id = id;
     this.username = username;
     this.loggedInUntil = loggedInUntil;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
+    this.deletedAt = deletedAt;
   }
 }
 

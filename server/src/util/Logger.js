@@ -1,3 +1,5 @@
+'use strict';
+
 const VError = require('verror').VError;
 
 /**
@@ -16,9 +18,10 @@ class Logger {
       console.error(VError.info(exc));
     }
     console.error(exc.stack);
-    if (VError.cause(exc) !== null) {
-      console.error('Cause by:');
-      console.error(VError.cause(exc));
+    const cause = VError.cause(exc);
+    if (cause !== null) {
+      console.error('Caused by:');
+      this.logException(cause);
     }
   }
 }

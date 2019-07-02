@@ -1,3 +1,5 @@
+'use strict';
+
 const RequestHandler = require('./RequestHandler');
 const Authorization = require('./auth/Authorization');
 
@@ -32,6 +34,10 @@ class UserApi extends RequestHandler {
        * the database.
        *
        * parameter username: The username is also used as display name.
+       * return 201: If the user was successfully authenticated
+       *        400: If the body did not contain a JSON-formatted property
+       *             called 'username'.
+       *        401: If authentication failed.
        */
       this.router.post('/login', async (req, res, next) => {
         try {
@@ -44,7 +50,7 @@ class UserApi extends RequestHandler {
             return res.status(401).send('Login failed');
           } else {
             Authorization.sendAuthCookie(loggedInUser, res);
-            return res.status(200).send('login ok');
+            return res.status(201).send('login ok');
           }
         } catch (err) {
           next(err);

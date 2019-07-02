@@ -1,6 +1,10 @@
+'use strict';
+
+const assert = require('assert').strict;
 const Sequelize = require('sequelize');
 const WError = require('verror').WError;
 const UserDTO = require('../model/UserDTO');
+const MsgDTO = require('../model/MsgDTO');
 const User = require('../model/User');
 const Msg = require('../model/Msg');
 
@@ -27,6 +31,8 @@ class ChatDAO {
 
   /**
    * Creates non-existing tables, existing tables are not touched.
+   *
+   * @throws Throws an exception if the database could not be created.
    */
   async createTables() {
     try {
@@ -47,25 +53,17 @@ class ChatDAO {
    * Searches for a user with the specified username.
    *
    * @param {string} username The username of the searched user.
-   * @return {object} An array containing all users with the
-   *                  specified username. Each element in the returned
-   *                  array is a model.dataValue sequelize object. The array
-   *                  is empty if no matching users were found.
+   * @return {array} An array containing all users with the
+   *                 specified username. Each element in the returned
+   *                 array is a userDTO. The array is empty if no matching
+   *                 users were found.
+   * @throws Throws an exception if failed to search for the specified user.
    */
   async findUserByUsername(username) {
-    // const userModel = this.models[this.modelNames.USER_MODEL_NAME];
     try {
       return await User.findAll({
         where: {username: username},
-      }).map(
-          (userModel) =>
-            new UserDTO(
-                userModel.dataValues.id,
-                userModel.dataValues.username,
-                userModel.dataValues.createdAt,
-                userModel.dataValues.updatedAt
-            )
-      );
+      }).map((userModel) => this.createUserDto(userModel));
     } catch (err) {
       throw new WError(
           {
@@ -75,7 +73,7 @@ class ChatDAO {
               username: username,
             },
           },
-          `Could not serach for user ${username}.`
+          `Could not search for user ${username}.`
       );
     }
   }
@@ -85,25 +83,162 @@ class ChatDAO {
    * present in the specified User object are updated.
    *
    * @param {UserDTO} user The new state of the user instance.
+   * @throws Throws an exception if failed to update the user.
    */
   async updateUser(user) {
-    await User.update(user, {
-      where: {id: user.id},
-    });
+    try {
+      assert(
+          user instanceof UserDTO,
+          'argument "user" must be a UserDTO instance.'
+      );
+      await User.update(user, {
+        where: {id: user.id},
+      });
+    } catch (err) {
+      throw new WError(
+          {
+            cause: err,
+            info: {
+              ChatDAO: 'Failed to update user.',
+              username: user.username,
+            },
+          },
+          `Could not update user ${user.username}.`
+      );
+    }
   }
 
   /**
-   * Adds the specified message to the conversation.
+   * Creates the specified message.
    *
    * @param {string} msg The message to add.
-   * @param {User} author The message author.
+   * @param {UserDTO} author The message author.
+   * @return {MsgDTO} The newly created message.
+   * @throws Throws an exception if failed to create the message.
    */
   async createMsg(msg, author) {
-    const msgEntityInstance = await Msg.create({msg: msg});
-    const usersWithAuthorsUsername = await this.findUserByUsername(
-        author.username
+    try {
+      assert(
+          author instanceof UserDTO,
+          'argument "author" must be a UserDTO instance.'
+      );
+      const msgEntityInstance = await Msg.create({msg: msg});
+      const usersWithAuthorsUsername = await this.findUserByUsername(
+          author.username
+      );
+      const authorFromDb = usersWithAuthorsUsername[0];
+      await msgEntityInstance.setUser(authorFromDb.id);
+      return this.createMsgDto(msgEntityInstance);
+    } catch (err) {
+      throw new WError(
+          {
+            cause: err,
+            info: {
+              ChatDAO: 'Failed to update user.',
+              username: user.username,
+            },
+          },
+          `Could not update user ${user.username}.`
+      );
+    }
+  }
+
+  /**
+   * Searches for a message with the specified id.
+   *
+   * @param {number} msgId The id of the searched message.
+   * @return {MsgDTO} The message with the specified id, or null if there was
+   *                  no such message.
+   * @throws Throws an exception if failed to search for the specified message.
+   */
+  async findMsgById(msgId) {
+    try {
+      assert.equal(
+          typeof msgId,
+          'number',
+          'argument "msgId" must be a number.'
+      );
+      assert(
+          !isNaN(msgId) && msgId > 0,
+          'argument "msgId" must be a positive integer.'
+      );
+      const msgModel = await Msg.findOne({
+        where: {id: msgId},
+      });
+      if (msgModel === null) {
+        return null;
+      }
+      return this.createMsgDto(msgModel);
+    } catch (err) {
+      throw new WError(
+          {
+            cause: err,
+            info: {
+              ChatDAO: 'Failed to search for msg.',
+              id: msgId,
+            },
+          },
+          `Could not serach for message ${msgId}.`
+      );
+    }
+  }
+
+  /**
+   * Deletes the message with the specified id.
+   *
+   * @param {number} msgId The id of the message that shall be deleted.
+   * @throws Throws an exception if failed to delete the specified message.
+   */
+  async deleteMsg(msgId) {
+    try {
+      assert.equal(
+          typeof msgId,
+          'number',
+          'argument "msgId" must be a number.'
+      );
+      assert(
+          !isNaN(msgId) && msgId > 0,
+          'argument "msgId" must be a positive integer.'
+      );
+      await Msg.destroy({where: {id: msgId}});
+    } catch (err) {
+      throw new WError(
+          {
+            info: {
+              ChatDAO: 'Failed to delete message.',
+              msg: msgId,
+            },
+          },
+          `Could not delete message ${msgId}.`
+      );
+    }
+  }
+
+  /*
+   * only 'private' helper methods below
+   */
+  // eslint-disable-next-line require-jsdoc
+  createMsgDto(msgModel) {
+    return new MsgDTO(
+        msgModel.dataValues.id,
+        msgModel.dataValues.userId,
+        msgModel.dataValues.msg,
+        msgModel.dataValues.createdAt,
+        msgModel.dataValues.updatedAt,
+        msgModel.dataValues.deletedAt
     );
-    await msgEntityInstance.setUser(usersWithAuthorsUsername[0].id);
+  }
+
+  // eslint-disable-next-line require-jsdoc
+  createUserDto(userModel) {
+    return new UserDTO(
+        userModel.dataValues.id,
+        userModel.dataValues.username,
+        userModel.dataValues.loggedInUntil,
+        userModel.dataValues.createdAt,
+        userModel.dataValues.updatedAt,
+        userModel.dataValues.deletedAt
+    );
   }
 }
 
