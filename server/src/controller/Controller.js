@@ -1,9 +1,10 @@
 'use strict';
 
-const assert = require('assert').strict;
 const moment = require('moment');
 moment().format();
+const Validators = require('../util/Validators');
 const ChatDAO = require('../integration/ChatDAO');
+const UserDTO = require('../model/UserDTO');
 
 /**
  * The application's controller. No other class shall call the model or
@@ -39,6 +40,8 @@ class Controller {
    *         user.
    */
   async login(username) {
+    Validators.isNonZeroLengthString(username, 'username');
+    Validators.isAlnumString(username, 'username');
     const users = await this.chatDAO.findUserByUsername(username);
     if (users.length === 0) {
       return null;
@@ -53,25 +56,28 @@ class Controller {
    * logged in and false if the user is not logged in.
    *
    * @param {string} username: The username of the user logging in.
-   * @return {boolean} true if the user is logged in, false if the user is
-   *                   not logged in.
+   * @return {UserDTO} A userDTO describing the logged in user if the user is
+   *                   logged in. Null if the user is not logged in.
    * @throws Throws an exception if failed to verify whether the specified user
    *         is logged in.
    */
   async isLoggedIn(username) {
+    Validators.isNonZeroLengthString(username, 'username');
+    Validators.isAlnumString(username, 'username');
     const users = await this.chatDAO.findUserByUsername(username);
     if (users.length === 0) {
-      return false;
+      return null;
     }
-    const loginExpires = moment(users[0].loggedInUntil);
+    const loggedInUser = users[0];
+    const loginExpires = moment(loggedInUser.loggedInUntil);
     if (loginExpires === null) {
-      return false;
+      return null;
     }
     const now = moment();
     if (loginExpires.isBefore(now)) {
-      return false;
+      return null;
     }
-    return true;
+    return loggedInUser;
   }
 
   /**
@@ -83,10 +89,8 @@ class Controller {
    * @throws Throws an exception if failed to add the specified message.
    */
   async addMsg(msg, author) {
-    assert(
-        author instanceof UserDTO,
-        'argument "author" must be a UserDTO instance.'
-    );
+    Validators.isNonZeroLengthString(msg, 'msg');
+    Validators.isInstanceOf(author, UserDTO, 'user', 'UserDTO');
     return await this.chatDAO.createMsg(msg, author);
   }
 
@@ -99,11 +103,7 @@ class Controller {
    * @throws Throws an exception if failed to search for the specified message.
    */
   async findMsg(msgId) {
-    assert.equal(typeof msgId, 'number', 'argument "msgId" must be a number.');
-    assert(
-        !isNaN(msgId) && msgId > 0,
-        'argument "msgId" must be a positive integer.'
-    );
+    Validators.isPositiveInteger(msgId, 'msgId');
     return await this.chatDAO.findMsgById(msgId);
   }
 
@@ -114,11 +114,7 @@ class Controller {
    * @throws Throws an exception if failed to delete the specified message.
    */
   async deleteMsg(msgId) {
-    assert.equal(typeof msgId, 'number', 'argument "msgId" must be a number.');
-    assert(
-        !isNaN(msgId) && msgId > 0,
-        'argument "msgId" must be a positive integer.'
-    );
+    Validators.isPositiveInteger(msgId, 'msgId');
     await this.chatDAO.deleteMsg(msgId);
   }
 

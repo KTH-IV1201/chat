@@ -1,5 +1,6 @@
 'use strict';
 
+const {check, validationResult} = require('express-validator');
 const RequestHandler = require('./RequestHandler');
 const Authorization = require('./auth/Authorization');
 
@@ -38,20 +39,39 @@ class MsgApi extends RequestHandler {
        *             called 'msg'.
        *        401: If the user was not authenticated.
        */
-      this.router.post('/', async (req, res, next) => {
-        try {
-          if (!(await Authorization.checkLogin(this.contr, req, res))) {
-            return;
+      this.router.post(
+          '/',
+          [
+            check('msg')
+                .not()
+                .isEmpty()
+                .escape(),
+          ],
+          async (req, res, next) => {
+            try {
+              const errors = validationResult(req);
+              if (!errors.isEmpty()) {
+                this.sendHttpResponse(res, 400, errors.array());
+                return;
+              }
+
+              if (
+                !(await Authorization.checkLogin(
+                    this.contr,
+                    req,
+                    res,
+                    this.sendHttpResponse
+                ))
+              ) {
+                return;
+              }
+              const msg = await this.contr.addMsg(req.body.msg, req.user);
+              this.sendHttpResponse(res, 200, msg);
+            } catch (err) {
+              next(err);
+            }
           }
-          if (!req.body.msg) {
-            return res.status(400).send('fields are missing');
-          }
-          const msg = await this.contr.addMsg(req.body.msg, req.user);
-          res.status(200).send(msg);
-        } catch (err) {
-          next(err);
-        }
-      });
+      );
 
       /*
        * Deletes the specified message.
@@ -64,20 +84,27 @@ class MsgApi extends RequestHandler {
        */
       this.router.delete('/:id', async (req, res, next) => {
         try {
-          if (!(await Authorization.checkLogin(this.contr, req, res))) {
+          if (
+            !(await Authorization.checkLogin(
+                this.contr,
+                req,
+                res,
+                this.sendHttpResponse
+            ))
+          ) {
             return;
           }
           const msg = await this.contr.findMsg(parseInt(req.params.id, 10));
           if (msg === null) {
-            res.status(404).send('No such message');
+            this.sendHttpResponse(res, 404, 'No such message');
             return;
           }
           if (req.user.id !== msg.authorId) {
-            res.status(401).send('Unauthorised user');
+            this.sendHttpResponse(res, 401, 'Unauthorised user');
             return;
           }
           await this.contr.deleteMsg(parseInt(req.params.id, 10));
-          res.status(204).end();
+          this.sendHttpResponse(res, 204);
         } catch (err) {
           next(err);
         }

@@ -1,5 +1,6 @@
 'use strict';
 
+const {check, validationResult} = require('express-validator');
 const RequestHandler = require('./RequestHandler');
 const Authorization = require('./auth/Authorization');
 
@@ -39,23 +40,31 @@ class UserApi extends RequestHandler {
        *             called 'username'.
        *        401: If authentication failed.
        */
-      this.router.post('/login', async (req, res, next) => {
-        try {
-          if (!req.body.username) {
-            return res.status(400).send('fields are missing');
-          }
+      this.router.post(
+          '/login',
+          [check('username').isAlphanumeric()],
+          async (req, res, next) => {
+            try {
+              const errors = validationResult(req);
+              if (!errors.isEmpty()) {
+                this.sendHttpResponse(res, 400, errors.array());
+                return;
+              }
 
-          const loggedInUser = await this.contr.login(req.body.username);
-          if (loggedInUser === null) {
-            return res.status(401).send('Login failed');
-          } else {
-            Authorization.sendAuthCookie(loggedInUser, res);
-            return res.status(201).send('login ok');
+              const loggedInUser = await this.contr.login(req.body.username);
+              if (loggedInUser === null) {
+                this.sendHttpResponse(res, 401, 'Login failed');
+                return;
+              } else {
+                Authorization.sendAuthCookie(loggedInUser, res);
+                this.sendHttpResponse(res, 204);
+                return;
+              }
+            } catch (err) {
+              next(err);
+            }
           }
-        } catch (err) {
-          next(err);
-        }
-      });
+      );
     } catch (err) {
       this.logger.logException(err);
     }

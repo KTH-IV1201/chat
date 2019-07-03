@@ -1,5 +1,7 @@
 'use strict';
 
+const Validators = require('../util/Validators');
+
 /**
  * A user of the chat application.
  */
@@ -26,6 +28,12 @@ class UserDTO {
    *                           set automatically when a msg is deleted.
    */
   constructor(id, username, loggedInUntil, createdAt, updatedAt, deletedAt) {
+    Validators.isPositiveInteger(id, 'id');
+    Validators.isNonZeroLengthString(username, 'username');
+    Validators.isAlnumString(username, 'username');
+    Validators.isInstanceOf(createdAt, Date, 'createdAt', 'Date');
+    Validators.isInstanceOf(updatedAt, Date, 'updatedAt', 'Date');
+    Validators.isInstanceOfOrNothing(deletedAt, Date, 'deletedAt', 'Date');
     this.id = id;
     this.username = username;
     this.loggedInUntil = loggedInUntil;

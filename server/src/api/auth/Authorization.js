@@ -21,26 +21,34 @@ class Authorization {
    * @param {Controller} contr The application's controller.
    * @param {Request} req The express Request object.
    * @param {Response} res The express response object.
+   * @param {function} errorHandler Called if the request is not made by an
+   *                                authenticated user. This function shall
+   *                                have following signature:
+   *                                <p>
+   *                                  function errorHandler(res, httpStatus,
+   *                                                        reason)
+   *                                </p>
    * @return {boolean} true is the user was logged in, false if not.
    */
-  static async checkLogin(contr, req, res) {
+  static async checkLogin(contr, req, res, errorHandler) {
     const authCookie = req.cookies.chatAuth;
     if (!authCookie) {
-      res.status(401).send('Invalid or missing authorization token');
+      errorHandler(res, 401, 'Invalid or missing authorization token');
       return false;
     }
     try {
       const userJWTPayload = jwt.verify(authCookie, process.env.JWT_SECRET);
-      if (!(await contr.isLoggedIn(userJWTPayload.username))) {
+      const loggedInUser = await contr.isLoggedIn(userJWTPayload.username);
+      if (loggedInUser === null) {
         res.clearCookie('chatAuth');
-        res.status(401).send('Invalid or missing authorization token');
+        errorHandler(res, 401, 'Invalid or missing authorization token');
         return false;
       }
-      req.user = userJWTPayload;
+      req.user = loggedInUser;
       return true;
     } catch (err) {
       res.clearCookie('chatAuth');
-      res.status(401).send('Invalid or missing authorization token');
+      errorHandler(res, 401, 'Invalid or missing authorization token');
       return false;
     }
   }

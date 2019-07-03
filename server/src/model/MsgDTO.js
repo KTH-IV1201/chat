@@ -1,5 +1,7 @@
 'use strict';
 
+const Validators = require('../util/Validators');
+
 /**
  * A message in the chat conversation.
  */
@@ -11,7 +13,7 @@ class MsgDTO {
    *                    will be automatically generated when a new message is
    *                    created. Any value specified when creating a new
    *                    message will be ignored.
-   * @param {UserDTO} authorId The id of the user who submitted the message.
+   * @param {number} authorId The id of the user who submitted the message.
    * @param {string} msg The message content.
    * @param {string} createdAt The time when the msg with the specified id was
    *                           created. This property will be set
@@ -24,6 +26,12 @@ class MsgDTO {
    *                           set automatically when a msg is deleted.
    */
   constructor(id, authorId, msg, createdAt, updatedAt, deletedAt) {
+    Validators.isPositiveInteger(id, 'id');
+    Validators.isPositiveInteger(authorId, 'authorId');
+    Validators.isNonZeroLengthString(msg, 'msg');
+    Validators.isInstanceOf(createdAt, Date, 'createdAt', 'Date');
+    Validators.isInstanceOf(updatedAt, Date, 'updatedAt', 'Date');
+    Validators.isInstanceOfOrNothing(deletedAt, Date, 'deletedAt', 'Date');
     this.id = id;
     this.authorId = authorId;
     this.msg = msg;

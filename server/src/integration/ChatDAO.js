@@ -1,8 +1,8 @@
 'use strict';
 
-const assert = require('assert').strict;
 const Sequelize = require('sequelize');
 const WError = require('verror').WError;
+const Validators = require('../util/Validators');
 const UserDTO = require('../model/UserDTO');
 const MsgDTO = require('../model/MsgDTO');
 const User = require('../model/User');
@@ -61,6 +61,8 @@ class ChatDAO {
    */
   async findUserByUsername(username) {
     try {
+      Validators.isNonZeroLengthString(username, 'username');
+      Validators.isAlnumString(username, 'username');
       return await User.findAll({
         where: {username: username},
       }).map((userModel) => this.createUserDto(userModel));
@@ -87,10 +89,7 @@ class ChatDAO {
    */
   async updateUser(user) {
     try {
-      assert(
-          user instanceof UserDTO,
-          'argument "user" must be a UserDTO instance.'
-      );
+      Validators.isInstanceOf(user, UserDTO, 'user', 'UserDTO');
       await User.update(user, {
         where: {id: user.id},
       });
@@ -118,10 +117,8 @@ class ChatDAO {
    */
   async createMsg(msg, author) {
     try {
-      assert(
-          author instanceof UserDTO,
-          'argument "author" must be a UserDTO instance.'
-      );
+      Validators.isNonZeroLengthString(msg, 'msg');
+      Validators.isInstanceOf(author, UserDTO, 'author', 'UserDTO');
       const msgEntityInstance = await Msg.create({msg: msg});
       const usersWithAuthorsUsername = await this.findUserByUsername(
           author.username
@@ -135,10 +132,10 @@ class ChatDAO {
             cause: err,
             info: {
               ChatDAO: 'Failed to update user.',
-              username: user.username,
+              username: author.username,
             },
           },
-          `Could not update user ${user.username}.`
+          `Could not create message ${msg} by ${author.username}.`
       );
     }
   }
@@ -153,15 +150,7 @@ class ChatDAO {
    */
   async findMsgById(msgId) {
     try {
-      assert.equal(
-          typeof msgId,
-          'number',
-          'argument "msgId" must be a number.'
-      );
-      assert(
-          !isNaN(msgId) && msgId > 0,
-          'argument "msgId" must be a positive integer.'
-      );
+      Validators.isPositiveInteger(msgId, 'msgId');
       const msgModel = await Msg.findOne({
         where: {id: msgId},
       });
@@ -191,15 +180,7 @@ class ChatDAO {
    */
   async deleteMsg(msgId) {
     try {
-      assert.equal(
-          typeof msgId,
-          'number',
-          'argument "msgId" must be a number.'
-      );
-      assert(
-          !isNaN(msgId) && msgId > 0,
-          'argument "msgId" must be a positive integer.'
-      );
+      Validators.isPositiveInteger(msgId, 'msgId');
       await Msg.destroy({where: {id: msgId}});
     } catch (err) {
       throw new WError(

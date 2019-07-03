@@ -19,7 +19,9 @@
     "verror": "^1.10.0",
     "jsonwebtoken": "^8.5.1",
     "cookie-parser": "^1.4.4",
-    "moment": "^2.24.0"
+    "moment": "^2.24.0",
+    "validator": "^11.0.0",
+    "express-validator": "^6.1.1"
   },
   "devDependencies": {
     "eslint": "^6.0.0",
