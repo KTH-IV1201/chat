@@ -34,7 +34,7 @@ class MsgApi extends RequestHandler {
        * username in the 'chatAuth' cookie.
        *
        * parameter msg: The chat message.
-       * return 200: If the message was added.
+       * return 200: The newly created message, if the message was added.
        *        400: If the body did not contain a JSON-formatted property
        *             called 'msg'.
        *        401: If the user was not authenticated.
@@ -105,6 +105,36 @@ class MsgApi extends RequestHandler {
           }
           await this.contr.deleteMsg(parseInt(req.params.id, 10));
           this.sendHttpResponse(res, 204);
+        } catch (err) {
+          next(err);
+        }
+      });
+
+      /*
+       * Reads all messages
+       *
+       * return 200: An array containing all messages, if messages were read.
+       *        401: If the user was not authenticated.
+       *        404: If there are no messages at all.
+       */
+      this.router.get('/', async (req, res, next) => {
+        try {
+          if (
+            !(await Authorization.checkLogin(
+                this.contr,
+                req,
+                res,
+                this.sendHttpResponse
+            ))
+          ) {
+            return;
+          }
+          const msgs = await this.contr.findAllMsgs();
+          if (msgs.length === 0) {
+            this.sendHttpResponse(res, 404, 'No messages');
+            return;
+          }
+          this.sendHttpResponse(res, 200, msgs);
         } catch (err) {
           next(err);
         }

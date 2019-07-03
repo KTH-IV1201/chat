@@ -108,6 +108,17 @@ class Controller {
   }
 
   /**
+   * Returns all messages
+   *
+   * @return {MsgDTO[]} An array containing all messages. The array will be
+   *                    empty if there are no messages.
+   * @throws Throws an exception if failed to search for the specified message.
+   */
+  async findAllMsgs() {
+    return await this.chatDAO.findAllMsgs();
+  }
+
+  /**
    * Deletes the message with the specified id.
    *
    * @param {number} msgId The id of the message that shall be deleted.
