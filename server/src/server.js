@@ -25,3 +25,5 @@ reqHandlerLoader.loadErrorHandlers(app);
 const server = app.listen(process.env.SERVER_PORT, () => {
   console.log(`Running server on port ${server.address().port}`);
 });
+
+module.exports = server;

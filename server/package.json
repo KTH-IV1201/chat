@@ -4,7 +4,7 @@
   "description": "",
   "main": "src/server.js",
   "scripts": {
-    "test": "node node_modules/jest/bin/jest.js",
+    "test": "node node_modules/jest/bin/jest.js --runInBand --watchAll --detectOpenHandles --silent",
     "start-dev": "NODE_ENV=development && nodemon src/server",
     "start": "NODE_ENV=production && nodemon src/server"
   },
@@ -26,6 +26,8 @@
   "devDependencies": {
     "eslint": "^6.0.0",
     "eslint-config-google": "^0.13.0",
-    "jest": "^24.8.0"
+    "jest": "^24.8.0",
+    "mysql": "^2.17.1",
+    "supertest": "^4.0.2"
   }
 }

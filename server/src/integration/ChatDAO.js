@@ -23,8 +23,6 @@ class ChatDAO {
         process.env.DB_PASS,
         {host: process.env.DB_HOST, dialect: process.env.DB_DIALECT}
     );
-    // this.modelNames = new Models();
-    // this.models = this.modelNames.createAllModels(this.database);
     User.createModel(this.database);
     Msg.createModel(this.database);
   }
@@ -181,9 +179,7 @@ class ChatDAO {
    */
   async findAllMsgs() {
     try {
-      return await Msg.findAll().map((msgModel) =>
-        this.createMsgDto(msgModel)
-      );
+      return await Msg.findAll().map((msgModel) => this.createMsgDto(msgModel));
     } catch (err) {
       throw new WError(
           {
