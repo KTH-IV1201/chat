@@ -81,6 +81,38 @@ class ChatDAO {
   }
 
   /**
+   * Searches for a user with the specified id.
+   *
+   * @param {number} id The id of the searched user.
+   * @return {MsgDTO} The user with the specified id, or null if there was
+   *                  no such user.
+   * @throws Throws an exception if failed to search for the specified user.
+   */
+  async findUserById(id) {
+    try {
+      Validators.isPositiveInteger(id, 'id');
+      const userModel = await User.findOne({
+        where: {id: id},
+      });
+      if (userModel === null) {
+        return null;
+      }
+      return this.createUserDto(userModel);
+    } catch (err) {
+      throw new WError(
+          {
+            cause: err,
+            info: {
+              ChatDAO: 'Failed to search for user.',
+              id: id,
+            },
+          },
+          `Could not serach for user ${id}.`
+      );
+    }
+  }
+
+  /**
    * Updates the user with the id of the specified User object. All fields
    * present in the specified User object are updated.
    *
