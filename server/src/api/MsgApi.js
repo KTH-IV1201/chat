@@ -3,6 +3,7 @@
 const {check, validationResult} = require('express-validator');
 const RequestHandler = require('./RequestHandler');
 const Authorization = require('./auth/Authorization');
+const UserApi = require('./UserApi');
 
 /**
  * Defines the REST API with endpoints related to messages.
@@ -66,6 +67,7 @@ class MsgApi extends RequestHandler {
                 return;
               }
               const msg = await this.contr.addMsg(req.body.msg, req.user);
+              this.convertAuthorIdToUrl(msg);
               this.sendHttpResponse(res, 200, msg);
             } catch (err) {
               next(err);
@@ -134,6 +136,9 @@ class MsgApi extends RequestHandler {
             this.sendHttpResponse(res, 404, 'No messages');
             return;
           }
+          for (const msg of msgs) {
+            this.convertAuthorIdToUrl(msg);
+          }
           this.sendHttpResponse(res, 200, msgs);
         } catch (err) {
           next(err);
@@ -142,6 +147,19 @@ class MsgApi extends RequestHandler {
     } catch (err) {
       this.logger.logException(err);
     }
+  }
+
+  // eslint-disable-next-line require-jsdoc
+  convertAuthorIdToUrl(msg) {
+    msg.author =
+      RequestHandler.URL_PREFIX +
+      process.env.SERVER_HOST +
+      ':' +
+      process.env.SERVER_PORT +
+      UserApi.USER_API_PATH +
+      '/' +
+      msg.authorId;
+    delete msg.authorId;
   }
 }
 

@@ -19,6 +19,13 @@ class RequestHandler {
   }
 
   /**
+   * Protocol part (http) of a URL.
+   */
+  static get URL_PREFIX() {
+    return 'http://';
+  }
+
+  /**
    * Creates the controller, which shall be used by subclasses.
    */
   async retrieveController() {

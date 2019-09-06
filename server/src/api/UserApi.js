@@ -19,6 +19,13 @@ class UserApi extends RequestHandler {
    * @return {string} The URL paths handled by this request handler.
    */
   get path() {
+    return UserApi.USER_API_PATH;
+  }
+
+  /**
+   * @return {string} The URL paths handled by this request handler.
+   */
+  static get USER_API_PATH() {
     return '/user';
   }
 
@@ -65,6 +72,37 @@ class UserApi extends RequestHandler {
             }
           }
       );
+
+      /*
+       * Returns the specified user.
+       *
+       * parameter id The id of the user that shall be returned.
+       * return 200: The searched user.
+       *        401: If the user was not authenticated.
+       *        404: If the specified user did not exist.
+       */
+      this.router.get('/:id', async (req, res, next) => {
+        try {
+          if (
+            !Authorization.checkLogin(
+                this.contr,
+                req,
+                res,
+                this.sendHttpResponse
+            )
+          ) {
+            return;
+          }
+          const user = await this.contr.findUser(parseInt(req.params.id, 10));
+          if (user === null) {
+            this.sendHttpResponse(res, 404, 'No such user');
+            return;
+          }
+          this.sendHttpResponse(res, 200, user);
+        } catch (err) {
+          next(err);
+        }
+      });
     } catch (err) {
       this.logger.logException(err);
     }

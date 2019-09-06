@@ -108,6 +108,18 @@ class Controller {
   }
 
   /**
+   * Returns the user with the specified id.
+   *
+   * @param {number} id The id of the searched user.
+   * @return {UserDTO} The user with the specified id, or null if there was
+   *                  no such user.
+   * @throws Throws an exception if failed to search for the specified user.
+   */
+  findUser(id) {
+    return this.chatDAO.findUserById(id);
+  }
+
+  /**
    * Returns all messages
    *
    * @return {MsgDTO[]} An array containing all messages. The array will be
