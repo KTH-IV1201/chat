@@ -1,6 +1,12 @@
 'use strict';
 
-const result = require('dotenv').config();
+const path = require('path');
+const APP_ROOT_DIR = path.join(__dirname, '..');
+
+const result = require('dotenv-safe').config({
+  path: path.join(APP_ROOT_DIR, '.env'),
+  example: path.join(APP_ROOT_DIR, '.env.example'),
+});
 if (result.error) {
   throw result.error;
 }
@@ -13,6 +19,8 @@ app.use(bodyParser.json());
 
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
+
+app.use(express.static(path.join(APP_ROOT_DIR, 'public')));
 
 app.get('/', (req, res) => {
   return res.send('Welcome to the API');
