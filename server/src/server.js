@@ -39,3 +39,5 @@ const server = app.listen(
       );
     }
 );
+
+module.exports = server; // Needed for tests.
