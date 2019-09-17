@@ -89,9 +89,7 @@ class ChatDAO {
   async findUserById(id) {
     try {
       Validators.isPositiveInteger(id, 'id');
-      const userModel = await User.findOne({
-        where: {id: id},
-      });
+      const userModel = await User.findByPk(id);
       if (userModel === null) {
         return null;
       }
@@ -149,20 +147,20 @@ class ChatDAO {
     try {
       Validators.isNonZeroLengthString(msg, 'msg');
       Validators.isInstanceOf(author, UserDTO, 'author', 'UserDTO');
-      const msgEntityInstance = await Msg.create({msg: msg});
+      const createdMsg = await Msg.create({msg: msg});
       const usersWithAuthorsUsername = await this.findUserByUsername(
           author.username
       );
       const authorFromDb = usersWithAuthorsUsername[0];
-      await msgEntityInstance.setUser(authorFromDb.id);
-      return this.createMsgDto(msgEntityInstance);
+      await createdMsg.setUser(authorFromDb.id);
+      return this.createMsgDto(createdMsg, await createdMsg.getUser());
     } catch (err) {
       throw new WError(
           {
             cause: err,
             info: {
-              ChatDAO: 'Failed to update user.',
-              username: author.username,
+              ChatDAO: 'Failed to create message.',
+              message: msg,
             },
           },
           `Could not create message ${msg} by ${author.username}.`
@@ -173,31 +171,29 @@ class ChatDAO {
   /**
    * Searches for a message with the specified id.
    *
-   * @param {number} msgId The id of the searched message.
+   * @param {number} id The id of the searched message.
    * @return {MsgDTO} The message with the specified id, or null if there was
    *                  no such message.
    * @throws Throws an exception if failed to search for the specified message.
    */
-  async findMsgById(msgId) {
+  async findMsgById(id) {
     try {
-      Validators.isPositiveInteger(msgId, 'msgId');
-      const msgModel = await Msg.findOne({
-        where: {id: msgId},
-      });
+      Validators.isPositiveInteger(id, 'msgId');
+      const msgModel = await Msg.findByPk(id);
       if (msgModel === null) {
         return null;
       }
-      return this.createMsgDto(msgModel);
+      return this.createMsgDto(msgModel, await msgModel.getUser());
     } catch (err) {
       throw new WError(
           {
             cause: err,
             info: {
               ChatDAO: 'Failed to search for msg.',
-              id: msgId,
+              id: id,
             },
           },
-          `Could not serach for message ${msgId}.`
+          `Could not serach for message ${id}.`
       );
     }
   }
@@ -211,14 +207,15 @@ class ChatDAO {
    */
   async findAllMsgs() {
     try {
-      return await Msg.findAll().map((msgModel) => this.createMsgDto(msgModel));
+      return await Msg.findAll({include: ['user']}).map((msgModel) =>
+        this.createMsgDto(msgModel, msgModel.user)
+      );
     } catch (err) {
       throw new WError(
           {
             cause: err,
             info: {
               ChatDAO: 'Failed to read messages.',
-              id: msgId,
             },
           },
           `Could not read messages.`
@@ -253,26 +250,26 @@ class ChatDAO {
    * only 'private' helper methods below
    */
   // eslint-disable-next-line require-jsdoc
-  createMsgDto(msgModel) {
+  createMsgDto(msgModel, userModel) {
     return new MsgDTO(
-        msgModel.dataValues.id,
-        msgModel.dataValues.userId,
-        msgModel.dataValues.msg,
-        msgModel.dataValues.createdAt,
-        msgModel.dataValues.updatedAt,
-        msgModel.dataValues.deletedAt
+        msgModel.id,
+        this.createUserDto(userModel),
+        msgModel.msg,
+        msgModel.createdAt,
+        msgModel.updatedAt,
+        msgModel.deletedAt
     );
   }
 
   // eslint-disable-next-line require-jsdoc
   createUserDto(userModel) {
     return new UserDTO(
-        userModel.dataValues.id,
-        userModel.dataValues.username,
-        userModel.dataValues.loggedInUntil,
-        userModel.dataValues.createdAt,
-        userModel.dataValues.updatedAt,
-        userModel.dataValues.deletedAt
+        userModel.id,
+        userModel.username,
+        userModel.loggedInUntil,
+        userModel.createdAt,
+        userModel.updatedAt,
+        userModel.deletedAt
     );
   }
 }

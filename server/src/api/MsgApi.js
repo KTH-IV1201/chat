@@ -101,7 +101,7 @@ class MsgApi extends RequestHandler {
             this.sendHttpResponse(res, 404, 'No such message');
             return;
           }
-          if (req.user.id !== msg.authorId) {
+          if (req.user.id !== msg.author.id) {
             this.sendHttpResponse(res, 401, 'Unauthorised user');
             return;
           }
@@ -158,8 +158,7 @@ class MsgApi extends RequestHandler {
       process.env.SERVER_PORT +
       UserApi.USER_API_PATH +
       '/' +
-      msg.authorId;
-    delete msg.authorId;
+      msg.author.id;
   }
 }
 
