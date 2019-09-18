@@ -148,11 +148,7 @@ class ChatDAO {
       Validators.isNonZeroLengthString(msg, 'msg');
       Validators.isInstanceOf(author, UserDTO, 'author', 'UserDTO');
       const createdMsg = await Msg.create({msg: msg});
-      const usersWithAuthorsUsername = await this.findUserByUsername(
-          author.username
-      );
-      const authorFromDb = usersWithAuthorsUsername[0];
-      await createdMsg.setUser(authorFromDb.id);
+      await createdMsg.setUser(await User.findByPk(author.id));
       return this.createMsgDto(createdMsg, await createdMsg.getUser());
     } catch (err) {
       throw new WError(
@@ -226,22 +222,22 @@ class ChatDAO {
   /**
    * Deletes the message with the specified id.
    *
-   * @param {number} msgId The id of the message that shall be deleted.
+   * @param {number} id The id of the message that shall be deleted.
    * @throws Throws an exception if failed to delete the specified message.
    */
-  async deleteMsg(msgId) {
+  async deleteMsg(id) {
     try {
-      Validators.isPositiveInteger(msgId, 'msgId');
-      await Msg.destroy({where: {id: msgId}});
+      Validators.isPositiveInteger(id, 'msgId');
+      await Msg.destroy({where: {id: id}});
     } catch (err) {
       throw new WError(
           {
             info: {
               ChatDAO: 'Failed to delete message.',
-              msg: msgId,
+              msg: id,
             },
           },
-          `Could not delete message ${msgId}.`
+          `Could not delete message ${id}.`
       );
     }
   }
