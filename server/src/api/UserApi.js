@@ -49,7 +49,7 @@ class UserApi extends RequestHandler {
        */
       this.router.post(
           '/login',
-          [check('username').isAlphanumeric()],
+          check('username').isAlphanumeric(),
           async (req, res, next) => {
             try {
               const errors = validationResult(req);
@@ -81,28 +81,38 @@ class UserApi extends RequestHandler {
        *        401: If the user was not authenticated.
        *        404: If the specified user did not exist.
        */
-      this.router.get('/:id', async (req, res, next) => {
-        try {
-          if (
-            !Authorization.checkLogin(
-                this.contr,
-                req,
-                res,
-                this.sendHttpResponse
-            )
-          ) {
-            return;
+      this.router.get(
+          '/:id',
+          check('id').isNumeric({no_symbols: true}),
+          async (req, res, next) => {
+            try {
+              const errors = validationResult(req);
+              if (!errors.isEmpty()) {
+                this.sendHttpResponse(res, 400, errors.array());
+                return;
+              }
+
+              if (
+                !Authorization.checkLogin(
+                    this.contr,
+                    req,
+                    res,
+                    this.sendHttpResponse
+                )
+              ) {
+                return;
+              }
+              const user = await this.contr.findUser(parseInt(req.params.id, 10));
+              if (user === null) {
+                this.sendHttpResponse(res, 404, 'No such user');
+                return;
+              }
+              this.sendHttpResponse(res, 200, user);
+            } catch (err) {
+              next(err);
+            }
           }
-          const user = await this.contr.findUser(parseInt(req.params.id, 10));
-          if (user === null) {
-            this.sendHttpResponse(res, 404, 'No such user');
-            return;
-          }
-          this.sendHttpResponse(res, 200, user);
-        } catch (err) {
-          next(err);
-        }
-      });
+      );
     } catch (err) {
       this.logger.logException(err);
     }

@@ -42,12 +42,11 @@ class MsgApi extends RequestHandler {
        */
       this.router.post(
           '/',
-          [
-            check('msg')
-                .not()
-                .isEmpty()
-                .escape(),
-          ],
+          check('msg')
+              .not()
+              .isEmpty()
+              .stripLow(true)
+              .escape(),
           async (req, res, next) => {
             try {
               const errors = validationResult(req);
@@ -84,33 +83,43 @@ class MsgApi extends RequestHandler {
        *             of the specified message.
        *        404: If the specified message did not exist.
        */
-      this.router.delete('/:id', async (req, res, next) => {
-        try {
-          if (
-            !(await Authorization.checkLogin(
-                this.contr,
-                req,
-                res,
-                this.sendHttpResponse
-            ))
-          ) {
-            return;
+      this.router.delete(
+          '/:id',
+          check('id').isNumeric({no_symbols: true}),
+          async (req, res, next) => {
+            try {
+              const errors = validationResult(req);
+              if (!errors.isEmpty()) {
+                this.sendHttpResponse(res, 400, errors.array());
+                return;
+              }
+
+              if (
+                !(await Authorization.checkLogin(
+                    this.contr,
+                    req,
+                    res,
+                    this.sendHttpResponse
+                ))
+              ) {
+                return;
+              }
+              const msg = await this.contr.findMsg(parseInt(req.params.id, 10));
+              if (msg === null) {
+                this.sendHttpResponse(res, 404, 'No such message');
+                return;
+              }
+              if (req.user.id !== msg.author.id) {
+                this.sendHttpResponse(res, 401, 'Unauthorised user');
+                return;
+              }
+              await this.contr.deleteMsg(parseInt(req.params.id, 10));
+              this.sendHttpResponse(res, 204);
+            } catch (err) {
+              next(err);
+            }
           }
-          const msg = await this.contr.findMsg(parseInt(req.params.id, 10));
-          if (msg === null) {
-            this.sendHttpResponse(res, 404, 'No such message');
-            return;
-          }
-          if (req.user.id !== msg.author.id) {
-            this.sendHttpResponse(res, 401, 'Unauthorised user');
-            return;
-          }
-          await this.contr.deleteMsg(parseInt(req.params.id, 10));
-          this.sendHttpResponse(res, 204);
-        } catch (err) {
-          next(err);
-        }
-      });
+      );
 
       /*
        * Reads all messages
