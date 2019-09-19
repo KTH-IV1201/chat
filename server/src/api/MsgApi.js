@@ -78,7 +78,7 @@ class MsgApi extends RequestHandler {
       /*
        * Deletes the specified message.
        *
-       * parameter msgId The id of the message that shall be deleted.
+       * parameter id The id of the message that shall be deleted.
        * return 204: If the message was deleted.
        *        401: If the user was not authenticated, or was not the author
        *             of the specified message.
