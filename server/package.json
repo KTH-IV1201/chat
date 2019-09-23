@@ -19,7 +19,7 @@
     "jsonwebtoken": "^8.5.1",
     "mariadb": "^2.0.5",
     "nodemon": "^1.19.1",
-    "sequelize": "^5.8.12",
+    "sequelize": "^5.19.0",
     "verror": "^1.10.0"
   },
   "devDependencies": {
