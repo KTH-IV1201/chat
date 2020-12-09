@@ -16,6 +16,8 @@ jobs:
         node-version: 14.x
     
     - run: cd server
+    - run: pwd
+    - run: ls
 
     - run: npm ci
     - run: npm run non-interactive-test
