@@ -18,6 +18,12 @@ jobs:
     - run: cd server
     - run: pwd
     - run: ls
+    - run: ls server
+
+    - run: cd server
+    - run: pwd
+    - run: ls
+    - run: ls server
 
     - run: npm ci
     - run: npm run non-interactive-test
