@@ -44,10 +44,10 @@ const sleep = (ms) => {
 };
 
 const connectToChatDb = async () => {
-  const result = require('dotenv-safe').config();
-  if (result.error) {
-    throw result.error;
-  }
+  // const result = require('dotenv-safe').config();
+  // if (result.error) {
+  //   throw result.error;
+  // }
   const db = pgp({
     host: process.env.DB_HOST,
     database: process.env.DB_NAME,
