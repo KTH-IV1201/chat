@@ -9,8 +9,7 @@ const username = 'stina';
 
 beforeAll(async () => {
   db = await connectToChatDb();
-  console.error('pos3' + db);
-  await db.none('drop table if exists msgs');
+  console.log('pos3' + db);
   await clearDb();
 });
 
@@ -22,13 +21,11 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
-  await db.none('drop table if exists msgs');
   await clearDb();
 });
 
 afterAll(async () => {
-  await db.none('drop table if exists msgs');
-  await clearDb();
+  // await clearDb(); db == null here in github workflow.
 });
 
 describe('tests for findUserByUsername', () => {
@@ -57,14 +54,14 @@ const connectToChatDb = async () => {
     user: process.env.DB_USER,
     password: process.env.DB_PASS
   });
-  console.log('error' + db);
+  console.log('pos1' + db);
   await db.none('drop table if exists msgs');
   await db.none('drop table if exists users');
   return db;
 };
 
 const clearDb = async () => {
-  console.error('pos2' + db);
+  console.log('pos2' + db);
   await db.none('drop table if exists msgs');
   await db.none('drop table if exists users');
 };
