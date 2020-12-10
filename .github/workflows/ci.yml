@@ -10,7 +10,7 @@ jobs:
     container: node:14.15.1-buster
 
     env:
-      SERVER_HOST:
+      SERVER_HOST: localhost
       DB_USER: postgres
       DB_PASS: postgres
       DB_NAME: chatdb
