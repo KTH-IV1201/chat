@@ -7,9 +7,6 @@ const result = require('dotenv-safe').config({
   path: path.join(APP_ROOT_DIR, '.env'),
   example: path.join(APP_ROOT_DIR, '.env.example'),
 });
-if (result.error) {
-  throw result.error;
-}
 
 const express = require('express');
 const app = express();

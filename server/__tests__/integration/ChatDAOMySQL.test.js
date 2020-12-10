@@ -45,9 +45,7 @@ const sleep = (ms) => {
 
 const connectToChatDb = async () => {
   const result = require('dotenv-safe').config();
-  if (result.error) {
-    throw result.error;
-  }
+
   connection = await mysql.createConnection({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,

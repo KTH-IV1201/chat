@@ -9,7 +9,6 @@ const username = 'stina';
 
 beforeAll(async () => {
   db = await connectToChatDb();
-  console.log('pos3' + db);
   await clearDb();
 });
 
@@ -25,7 +24,7 @@ afterEach(async () => {
 });
 
 afterAll(async () => {
-  // await clearDb(); db == null here in github workflow.
+  await clearDb();
 });
 
 describe('tests for findUserByUsername', () => {
@@ -44,24 +43,17 @@ const sleep = (ms) => {
 };
 
 const connectToChatDb = async () => {
-  // const result = require('dotenv-safe').config();
-  // if (result.error) {
-  //   throw result.error;
-  // }
+  require('dotenv-safe').config();
   const db = pgp({
     host: process.env.DB_HOST,
     database: process.env.DB_NAME,
     user: process.env.DB_USER,
     password: process.env.DB_PASS
   });
-  console.log('pos1' + db);
-  await db.none('drop table if exists msgs');
-  await db.none('drop table if exists users');
   return db;
 };
 
 const clearDb = async () => {
-  console.log('pos2' + db);
   await db.none('drop table if exists msgs');
   await db.none('drop table if exists users');
 };
