@@ -47,11 +47,11 @@ jobs:
         working-directory: ./server
         continue-on-error: true
         
-      - name: Archive production artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: logs
-          path: /github/home/.npm/_logs/
+      # - name: Archive production artifacts
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #     name: logs
+      #     path: /github/home/.npm/_logs/
         
       - run: cat `find /github/ -name *log` 
       - run: ls 
