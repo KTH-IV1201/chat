@@ -8,6 +8,7 @@ jobs:
     name: run-npm-test
     runs-on: ubuntu-latest
     container: node:14.15.1-buster
+    continue-on-error: true
 
     env:
       SERVER_HOST: localhost
@@ -43,3 +44,9 @@ jobs:
 
       - run: npm run non-interactive-test
         working-directory: ./server
+        
+      - run: ls /github/home/.npm/_logs/
+      - run: ls /github/home/.npm
+      - run: ls /github/home/
+      - run: ls /github
+        
