@@ -45,6 +45,12 @@ jobs:
       - run: npm run non-interactive-test
         working-directory: ./server
         
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: logs
+          path: github
+        
       - run: ls /github/home/.npm/_logs/
       - run: ls /github/home/.npm
       - run: ls /github/home/
