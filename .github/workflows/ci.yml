@@ -42,8 +42,8 @@ jobs:
       - run: npm ci
         working-directory: ./server
 
-      - run: node node_modules/jest/bin/jest.js --forceExit --detectOpenHandles
-      # - run: npm run non-interactive-test
+      # - run: node node_modules/jest/bin/jest.js --forceExit --detectOpenHandles
+      - run: npm run non-interactive-test
         working-directory: ./server
         continue-on-error: true
         
