@@ -50,6 +50,7 @@ jobs:
         
       - run: npm run non-interactive-test
         working-directory: ./server
+        continue-on-error: true
         
       - run: ls /github/home/.npm/_logs/
       - run: ls /github/home/.npm
