@@ -48,7 +48,8 @@ jobs:
           name: logs
           path: github
         
-      - run: npm run non-interactive-test
+      - run: node node_modules/jest/bin/jest.js --watchAll --detectOpenHandles
+      # - run: npm run non-interactive-test
         working-directory: ./server
         continue-on-error: true
         
@@ -57,4 +58,3 @@ jobs:
       - run: ls /github/home/.npm
       - run: ls /github/home/
       - run: ls /github
-        

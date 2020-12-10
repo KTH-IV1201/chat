@@ -9,7 +9,8 @@ const username = 'stina';
 
 beforeAll(async () => {
   db = await connectToChatDb();
-  console.log('pos3' + db);
+  console.error('pos3' + db);
+  await db.none('drop table if exists msgs');
   await clearDb();
 });
 
@@ -54,14 +55,14 @@ const connectToChatDb = async () => {
     user: process.env.DB_USER,
     password: process.env.DB_PASS
   });
-  console.log('pos1' + db);
+  console.error('pos1' + db);
   await db.none('drop table if exists msgs');
   await db.none('drop table if exists users');
   return db;
 };
 
 const clearDb = async () => {
-  console.log('pos2' + db);
+  console.error('pos2' + db);
   await db.none('drop table if exists msgs');
   await db.none('drop table if exists users');
 };
