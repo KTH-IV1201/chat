@@ -42,7 +42,7 @@ const sleep = (ms) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
-const connectToChatDb = () => {
+const connectToChatDb = async () => {
   const result = require('dotenv-safe').config();
   if (result.error) {
     throw result.error;
@@ -53,7 +53,8 @@ const connectToChatDb = () => {
     user: process.env.DB_USER,
     password: process.env.DB_PASS
   });
-  console.log(db);
+  await db.none('drop table if exists msgs');
+  await db.none('drop table if exists users');
   return db;
 };
 
