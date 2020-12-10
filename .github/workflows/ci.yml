@@ -42,16 +42,16 @@ jobs:
       - run: npm ci
         working-directory: ./server
 
-      - name: Archive production artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: logs
-          path: github
-        
       - run: node node_modules/jest/bin/jest.js --forceExit --detectOpenHandles
       # - run: npm run non-interactive-test
         working-directory: ./server
         continue-on-error: true
+        
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: logs
+          path: /github
         
       - run: cat `find /github/ -name *log` 
       - run: ls /github/home/.npm/_logs/
