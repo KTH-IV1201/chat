@@ -51,10 +51,10 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: logs
-          path: /github
+          path: /github/home/.npm/_logs/
         
       - run: cat `find /github/ -name *log` 
-      - run: ls /github/home/.npm/_logs/
+      - run: ls 
       - run: ls /github/home/.npm
       - run: ls /github/home/
       - run: ls /github
