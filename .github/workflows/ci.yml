@@ -7,16 +7,39 @@ jobs:
   npm-inst:
     name: run-npm-test
     runs-on: ubuntu-latest
+    container: node:14.15.1-buster
+
+    env:
+      SERVER_HOST:
+      DB_USER: postgres
+      DB_PASS: postgres
+      DB_NAME: chatdb
+      DB_HOST: postgres
+      DB_DIALECT: not used by tests
+      SERVER_PORT: 8080
+      JWT_SECRET: 98798789chkslcamwoiucm
+
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: chatdb
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s
+          --health-retries 5
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - uses: actions/setup-node@v1
-      with:
-        node-version: 14.x
-    
-    - run: npm ci
-      working-directory: ./server
+#      - uses: actions/setup-node@v1
+#        with:
+#          node-version: 14.x
 
-    - run: npm run non-interactive-test
-      working-directory: ./server
+      - run: npm ci
+        working-directory: ./server
+
+      - run: npm run non-interactive-test
+        working-directory: ./server
