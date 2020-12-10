@@ -48,7 +48,7 @@ jobs:
           name: logs
           path: github
         
-      - run: node node_modules/jest/bin/jest.js --watchAll --detectOpenHandles
+      - run: node node_modules/jest/bin/jest.js --forceExit --detectOpenHandles
       # - run: npm run non-interactive-test
         working-directory: ./server
         continue-on-error: true
