@@ -52,7 +52,7 @@ jobs:
         working-directory: ./server
         continue-on-error: true
         
-      - run: cat `find github/ -name *log` 
+      - run: cat `find /github/ -name *log` 
       - run: ls /github/home/.npm/_logs/
       - run: ls /github/home/.npm
       - run: ls /github/home/
