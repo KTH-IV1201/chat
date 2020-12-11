@@ -42,8 +42,9 @@ jobs:
 
       - run: npm run non-interactive-test
         working-directory: ./server
-        continue-on-error: true
+        # Required to print log below, but flags run as passed even if there are failures.
+        # continue-on-error: true 
         
       # The log might contain more information about test failures.
-      - run: cat `find /github/ -name *log` 
-      - run: ls 
+      # - run: cat `find /github/ -name *log` 
+      # - run: ls 
