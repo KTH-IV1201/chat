@@ -8,7 +8,7 @@ jobs:
     name: run-npm-test
     runs-on: ubuntu-latest
     container: node:14.15.1-buster
-    continue-on-error: true
+    # continue-on-error: true
 
     env:
       SERVER_HOST: localhost
@@ -35,26 +35,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-#      - uses: actions/setup-node@v1
-#        with:
-#          node-version: 14.x
-
       - run: npm ci
         working-directory: ./server
 
-      # - run: node node_modules/jest/bin/jest.js --forceExit --detectOpenHandles
       - run: npm run non-interactive-test
         working-directory: ./server
         continue-on-error: true
         
-      # - name: Archive production artifacts
-      #   uses: actions/upload-artifact@v2
-      #   with:
-      #     name: logs
-      #     path: /github/home/.npm/_logs/
-        
+      # The log might contain more information about tests.
       - run: cat `find /github/ -name *log` 
       - run: ls 
-      - run: ls /github/home/.npm
-      - run: ls /github/home/
-      - run: ls /github
