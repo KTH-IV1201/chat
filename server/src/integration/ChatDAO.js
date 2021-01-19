@@ -103,7 +103,7 @@ class ChatDAO {
               id: id,
             },
           },
-          `Could not serach for user ${id}.`
+          `Could not search for user ${id}.`
       );
     }
   }

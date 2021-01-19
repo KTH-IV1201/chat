@@ -54,7 +54,7 @@ class Authorization {
   }
 
   /**
-   * Sens a cookie specifiying that the user is logged in.
+   * Sens a cookie specifying that the user is logged in.
    * @param {UserDTO} user The logged in user.
    * @param {Result} res The express request object.
    */

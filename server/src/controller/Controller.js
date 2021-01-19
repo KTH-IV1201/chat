@@ -6,7 +6,7 @@ const UserDTO = require('../model/UserDTO');
 
 /**
  * The application's controller. No other class shall call the model or
- * intagration layer.
+ * integration layer.
  */
 class Controller {
   /**
@@ -50,8 +50,7 @@ class Controller {
   }
 
   /**
-   * Checks if the specified user is logged in. Returns true if the user is
-   * logged in and false if the user is not logged in.
+   * Checks if the specified user is logged in.
    *
    * @param {string} username: The username of the user logging in.
    * @return {UserDTO} A userDTO describing the logged in user if the user is
