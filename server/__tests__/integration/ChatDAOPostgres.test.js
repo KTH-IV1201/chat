@@ -48,7 +48,7 @@ const connectToChatDb = async () => {
     host: process.env.DB_HOST,
     database: process.env.DB_NAME,
     user: process.env.DB_USER,
-    password: process.env.DB_PASS
+    password: process.env.DB_PASS,
   });
   return db;
 };
@@ -65,7 +65,7 @@ const createUser = async () => {
     updatedAt: 'now()',
   };
   await db.none(
-    'insert into ${table:name} (${valuesToInsert:name}) values (${valuesToInsert:csv})',
-    {valuesToInsert: data, table: 'users'}
+      'insert into ${table:name} (${valuesToInsert:name}) values (${valuesToInsert:csv})',
+      {valuesToInsert: data, table: 'users'}
   );
 };

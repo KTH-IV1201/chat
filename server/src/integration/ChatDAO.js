@@ -1,5 +1,6 @@
 'use strict';
 
+const cls = require('cls-hooked');
 const Sequelize = require('sequelize');
 const WError = require('verror').WError;
 const Validators = require('../util/Validators');
@@ -17,11 +18,13 @@ class ChatDAO {
    * Creates a new instance and connects to the database.
    */
   constructor() {
+    const namespace = cls.createNamespace('chat-dao');
+    Sequelize.useCLS(namespace);
     this.database = new Sequelize(
         process.env.DB_NAME,
         process.env.DB_USER,
         process.env.DB_PASS,
-        {host: process.env.DB_HOST, dialect: process.env.DB_DIALECT}
+        {host: process.env.DB_HOST, dialect: process.env.DB_DIALECT},
     );
     User.createModel(this.database);
     Msg.createModel(this.database);
@@ -42,7 +45,7 @@ class ChatDAO {
             cause: err,
             info: {ChatDAO: 'Failed to call authenticate and sync.'},
           },
-          'Could not connect to database.'
+          'Could not connect to database.',
       );
     }
   }
@@ -61,9 +64,12 @@ class ChatDAO {
     try {
       Validators.isNonZeroLengthString(username, 'username');
       Validators.isAlnumString(username, 'username');
-      return await User.findAll({
-        where: {username: username},
-      }).map((userModel) => this.createUserDto(userModel));
+      return this.database.transaction(async (t1) => {
+        const users = await User.findAll({
+          where: {username: username},
+        });
+        return users.map((userModel) => this.createUserDto(userModel));
+      });
     } catch (err) {
       throw new WError(
           {
@@ -73,7 +79,7 @@ class ChatDAO {
               username: username,
             },
           },
-          `Could not search for user ${username}.`
+          `Could not search for user ${username}.`,
       );
     }
   }
@@ -89,11 +95,13 @@ class ChatDAO {
   async findUserById(id) {
     try {
       Validators.isPositiveInteger(id, 'id');
-      const userModel = await User.findByPk(id);
-      if (userModel === null) {
-        return null;
-      }
-      return this.createUserDto(userModel);
+      return this.database.transaction(async (t1) => {
+        const userModel = await User.findByPk(id);
+        if (userModel === null) {
+          return null;
+        }
+        return this.createUserDto(userModel);
+      });
     } catch (err) {
       throw new WError(
           {
@@ -103,7 +111,7 @@ class ChatDAO {
               id: id,
             },
           },
-          `Could not search for user ${id}.`
+          `Could not search for user ${id}.`,
       );
     }
   }
@@ -118,8 +126,10 @@ class ChatDAO {
   async updateUser(user) {
     try {
       Validators.isInstanceOf(user, UserDTO, 'user', 'UserDTO');
-      await User.update(user, {
-        where: {id: user.id},
+      this.database.transaction(async (t1) => {
+        await User.update(user, {
+          where: {id: user.id},
+        });
       });
     } catch (err) {
       throw new WError(
@@ -130,7 +140,7 @@ class ChatDAO {
               username: user.username,
             },
           },
-          `Could not update user ${user.username}.`
+          `Could not update user ${user.username}.`,
       );
     }
   }
@@ -147,9 +157,11 @@ class ChatDAO {
     try {
       Validators.isNonZeroLengthString(msg, 'msg');
       Validators.isInstanceOf(author, UserDTO, 'author', 'UserDTO');
-      const createdMsg = await Msg.create({msg: msg});
-      await createdMsg.setUser(await User.findByPk(author.id));
-      return this.createMsgDto(createdMsg, await createdMsg.getUser());
+      return this.database.transaction(async (t1) => {
+        const createdMsg = await Msg.create({msg: msg});
+        await createdMsg.setUser(await User.findByPk(author.id));
+        return this.createMsgDto(createdMsg, await createdMsg.getUser());
+      });
     } catch (err) {
       throw new WError(
           {
@@ -159,7 +171,7 @@ class ChatDAO {
               message: msg,
             },
           },
-          `Could not create message ${msg} by ${author.username}.`
+          `Could not create message ${msg} by ${author.username}.`,
       );
     }
   }
@@ -175,11 +187,13 @@ class ChatDAO {
   async findMsgById(id) {
     try {
       Validators.isPositiveInteger(id, 'msgId');
-      const msgModel = await Msg.findByPk(id);
-      if (msgModel === null) {
-        return null;
-      }
-      return this.createMsgDto(msgModel, await msgModel.getUser());
+      return this.database.transaction(async (t1) => {
+        const msgModel = await Msg.findByPk(id);
+        if (msgModel === null) {
+          return null;
+        }
+        return this.createMsgDto(msgModel, await msgModel.getUser());
+      });
     } catch (err) {
       throw new WError(
           {
@@ -189,7 +203,7 @@ class ChatDAO {
               id: id,
             },
           },
-          `Could not serach for message ${id}.`
+          `Could not serach for message ${id}.`,
       );
     }
   }
@@ -203,9 +217,12 @@ class ChatDAO {
    */
   async findAllMsgs() {
     try {
-      return await Msg.findAll({include: ['user']}).map((msgModel) =>
-        this.createMsgDto(msgModel, msgModel.user)
-      );
+      return this.database.transaction(async (t1) => {
+        const msgs = await Msg.findAll({include: ['user']});
+        return msgs.map((msgModel) =>
+          this.createMsgDto(msgModel, msgModel.user),
+        );
+      });
     } catch (err) {
       throw new WError(
           {
@@ -214,7 +231,7 @@ class ChatDAO {
               ChatDAO: 'Failed to read messages.',
             },
           },
-          `Could not read messages.`
+          `Could not read messages.`,
       );
     }
   }
@@ -228,7 +245,9 @@ class ChatDAO {
   async deleteMsg(id) {
     try {
       Validators.isPositiveInteger(id, 'msgId');
-      await Msg.destroy({where: {id: id}});
+      this.database.transaction(async (t1) => {
+        await Msg.destroy({where: {id: id}});
+      });
     } catch (err) {
       throw new WError(
           {
@@ -237,7 +256,7 @@ class ChatDAO {
               msg: id,
             },
           },
-          `Could not delete message ${id}.`
+          `Could not delete message ${id}.`,
       );
     }
   }
@@ -253,7 +272,7 @@ class ChatDAO {
         msgModel.msg,
         msgModel.createdAt,
         msgModel.updatedAt,
-        msgModel.deletedAt
+        msgModel.deletedAt,
     );
   }
 
@@ -265,7 +284,7 @@ class ChatDAO {
         userModel.loggedInUntil,
         userModel.createdAt,
         userModel.updatedAt,
-        userModel.deletedAt
+        userModel.deletedAt,
     );
   }
 }

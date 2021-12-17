@@ -67,7 +67,7 @@ class Authorization {
         process.env.JWT_SECRET,
         {
           expiresIn: '30 minutes',
-        }
+        },
     );
 
     const cookieOptions = {
