@@ -70,7 +70,7 @@ class UserApi extends RequestHandler {
             } catch (err) {
               next(err);
             }
-          }
+          },
       );
 
       /*
@@ -97,12 +97,13 @@ class UserApi extends RequestHandler {
                     this.contr,
                     req,
                     res,
-                    this.sendHttpResponse
+                    this.sendHttpResponse,
                 )
               ) {
                 return;
               }
-              const user = await this.contr.findUser(parseInt(req.params.id, 10));
+              const user =
+                await this.contr.findUser(parseInt(req.params.id, 10));
               if (user === null) {
                 this.sendHttpResponse(res, 404, 'No such user');
                 return;
@@ -111,7 +112,7 @@ class UserApi extends RequestHandler {
             } catch (err) {
               next(err);
             }
-          }
+          },
       );
     } catch (err) {
       this.logger.logException(err);

@@ -18,7 +18,7 @@ class ChatDAO {
    * Creates a new instance and connects to the database.
    */
   constructor() {
-    const namespace = cls.createNamespace('chat-dao');
+    const namespace = cls.createNamespace('chat-db');
     Sequelize.useCLS(namespace);
     this.database = new Sequelize(
         process.env.DB_NAME,
@@ -28,6 +28,17 @@ class ChatDAO {
     );
     User.createModel(this.database);
     Msg.createModel(this.database);
+  }
+
+  /**
+   * @return {Object} The sequelize transaction manager, which is actually the
+   *                  database object. This method is called
+   *                  <code>getTransactionMgr</code> since the database is only
+   *                  supposed to be used for transaction handling in higher
+   *                  layers.
+   */
+  getTransactionMgr() {
+    return this.database;
   }
 
   /**
@@ -64,12 +75,10 @@ class ChatDAO {
     try {
       Validators.isNonZeroLengthString(username, 'username');
       Validators.isAlnumString(username, 'username');
-      return this.database.transaction(async (t1) => {
-        const users = await User.findAll({
-          where: {username: username},
-        });
-        return users.map((userModel) => this.createUserDto(userModel));
+      const users = await User.findAll({
+        where: {username: username},
       });
+      return users.map((userModel) => this.createUserDto(userModel));
     } catch (err) {
       throw new WError(
           {
@@ -95,13 +104,11 @@ class ChatDAO {
   async findUserById(id) {
     try {
       Validators.isPositiveInteger(id, 'id');
-      return this.database.transaction(async (t1) => {
-        const userModel = await User.findByPk(id);
-        if (userModel === null) {
-          return null;
-        }
-        return this.createUserDto(userModel);
-      });
+      const userModel = await User.findByPk(id);
+      if (userModel === null) {
+        return null;
+      }
+      return this.createUserDto(userModel);
     } catch (err) {
       throw new WError(
           {
@@ -126,10 +133,8 @@ class ChatDAO {
   async updateUser(user) {
     try {
       Validators.isInstanceOf(user, UserDTO, 'user', 'UserDTO');
-      this.database.transaction(async (t1) => {
-        await User.update(user, {
-          where: {id: user.id},
-        });
+      await User.update(user, {
+        where: {id: user.id},
       });
     } catch (err) {
       throw new WError(
@@ -157,11 +162,9 @@ class ChatDAO {
     try {
       Validators.isNonZeroLengthString(msg, 'msg');
       Validators.isInstanceOf(author, UserDTO, 'author', 'UserDTO');
-      return this.database.transaction(async (t1) => {
-        const createdMsg = await Msg.create({msg: msg});
-        await createdMsg.setUser(await User.findByPk(author.id));
-        return this.createMsgDto(createdMsg, await createdMsg.getUser());
-      });
+      const createdMsg = await Msg.create({msg: msg});
+      await createdMsg.setUser(await User.findByPk(author.id));
+      return this.createMsgDto(createdMsg, await createdMsg.getUser());
     } catch (err) {
       throw new WError(
           {
@@ -187,13 +190,11 @@ class ChatDAO {
   async findMsgById(id) {
     try {
       Validators.isPositiveInteger(id, 'msgId');
-      return this.database.transaction(async (t1) => {
-        const msgModel = await Msg.findByPk(id);
-        if (msgModel === null) {
-          return null;
-        }
-        return this.createMsgDto(msgModel, await msgModel.getUser());
-      });
+      const msgModel = await Msg.findByPk(id);
+      if (msgModel === null) {
+        return null;
+      }
+      return this.createMsgDto(msgModel, await msgModel.getUser());
     } catch (err) {
       throw new WError(
           {
@@ -203,7 +204,7 @@ class ChatDAO {
               id: id,
             },
           },
-          `Could not serach for message ${id}.`,
+          `Could not search for message ${id}.`,
       );
     }
   }
@@ -217,12 +218,10 @@ class ChatDAO {
    */
   async findAllMsgs() {
     try {
-      return this.database.transaction(async (t1) => {
-        const msgs = await Msg.findAll({include: ['user']});
-        return msgs.map((msgModel) =>
-          this.createMsgDto(msgModel, msgModel.user),
-        );
-      });
+      const msgs = await Msg.findAll({include: ['user']});
+      return msgs.map((msgModel) =>
+        this.createMsgDto(msgModel, msgModel.user),
+      );
     } catch (err) {
       throw new WError(
           {
@@ -245,9 +244,7 @@ class ChatDAO {
   async deleteMsg(id) {
     try {
       Validators.isPositiveInteger(id, 'msgId');
-      this.database.transaction(async (t1) => {
-        await Msg.destroy({where: {id: id}});
-      });
+      await Msg.destroy({where: {id: id}});
     } catch (err) {
       throw new WError(
           {

@@ -14,6 +14,7 @@ class Controller {
    */
   constructor() {
     this.chatDAO = new ChatDAO();
+    this.transactionMgr = this.chatDAO.getTransactionMgr();
   }
 
   /**
@@ -38,15 +39,17 @@ class Controller {
    *         user.
    */
   async login(username) {
-    Validators.isNonZeroLengthString(username, 'username');
-    Validators.isAlnumString(username, 'username');
-    const users = await this.chatDAO.findUserByUsername(username);
-    if (users.length === 0) {
-      return null;
-    }
-    const loggedInUser = users[0];
-    await this.setUsersStatusToLoggedIn(users[0]);
-    return loggedInUser;
+    return this.transactionMgr.transaction(async (t1) => {
+      Validators.isNonZeroLengthString(username, 'username');
+      Validators.isAlnumString(username, 'username');
+      const users = await this.chatDAO.findUserByUsername(username);
+      if (users.length === 0) {
+        return null;
+      }
+      const loggedInUser = users[0];
+      await this.setUsersStatusToLoggedIn(users[0]);
+      return loggedInUser;
+    });
   }
 
   /**
@@ -59,22 +62,24 @@ class Controller {
    *         is logged in.
    */
   async isLoggedIn(username) {
-    Validators.isNonZeroLengthString(username, 'username');
-    Validators.isAlnumString(username, 'username');
-    const users = await this.chatDAO.findUserByUsername(username);
-    if (users.length === 0) {
-      return null;
-    }
-    const loggedInUser = users[0];
-    const loginExpires = new Date(loggedInUser.loggedInUntil);
-    if (!this.isValidDate(loginExpires)) {
-      return null;
-    }
-    const now = new Date();
-    if (loginExpires < now) {
-      return null;
-    }
-    return loggedInUser;
+    return this.transactionMgr.transaction(async (t1) => {
+      Validators.isNonZeroLengthString(username, 'username');
+      Validators.isAlnumString(username, 'username');
+      const users = await this.chatDAO.findUserByUsername(username);
+      if (users.length === 0) {
+        return null;
+      }
+      const loggedInUser = users[0];
+      const loginExpires = new Date(loggedInUser.loggedInUntil);
+      if (!this.isValidDate(loginExpires)) {
+        return null;
+      }
+      const now = new Date();
+      if (loginExpires < now) {
+        return null;
+      }
+      return loggedInUser;
+    });
   }
 
   /**
@@ -86,9 +91,11 @@ class Controller {
    * @throws Throws an exception if failed to add the specified message.
    */
   async addMsg(msg, author) {
-    Validators.isNonZeroLengthString(msg, 'msg');
-    Validators.isInstanceOf(author, UserDTO, 'user', 'UserDTO');
-    return await this.chatDAO.createMsg(msg, author);
+    return this.transactionMgr.transaction(async (t1) => {
+      Validators.isNonZeroLengthString(msg, 'msg');
+      Validators.isInstanceOf(author, UserDTO, 'user', 'UserDTO');
+      return await this.chatDAO.createMsg(msg, author);
+    });
   }
 
   /**
@@ -100,8 +107,10 @@ class Controller {
    * @throws Throws an exception if failed to search for the specified message.
    */
   async findMsg(msgId) {
-    Validators.isPositiveInteger(msgId, 'msgId');
-    return await this.chatDAO.findMsgById(msgId);
+    return this.transactionMgr.transaction(async (t1) => {
+      Validators.isPositiveInteger(msgId, 'msgId');
+      return await this.chatDAO.findMsgById(msgId);
+    });
   }
 
   /**
@@ -113,7 +122,9 @@ class Controller {
    * @throws Throws an exception if failed to search for the specified user.
    */
   findUser(id) {
-    return this.chatDAO.findUserById(id);
+    return this.transactionMgr.transaction(async (t1) => {
+      return this.chatDAO.findUserById(id);
+    });
   }
 
   /**
@@ -124,7 +135,9 @@ class Controller {
    * @throws Throws an exception if failed to search for the specified message.
    */
   async findAllMsgs() {
-    return await this.chatDAO.findAllMsgs();
+    return this.transactionMgr.transaction(async (t1) => {
+      return await this.chatDAO.findAllMsgs();
+    });
   }
 
   /**
@@ -134,8 +147,10 @@ class Controller {
    * @throws Throws an exception if failed to delete the specified message.
    */
   async deleteMsg(msgId) {
-    Validators.isPositiveInteger(msgId, 'msgId');
-    await this.chatDAO.deleteMsg(msgId);
+    return this.transactionMgr.transaction(async (t1) => {
+      Validators.isPositiveInteger(msgId, 'msgId');
+      await this.chatDAO.deleteMsg(msgId);
+    });
   }
 
   /*
