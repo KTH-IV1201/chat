@@ -93,12 +93,12 @@ class UserApi extends RequestHandler {
               }
 
               if (
-                !await Authorization.checkLogin(
+                !(await Authorization.checkLogin(
                     this.contr,
                     req,
                     res,
                     this.sendHttpResponse,
-                )
+                ))
               ) {
                 return;
               }

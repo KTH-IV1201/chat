@@ -60,7 +60,7 @@ class MsgApi extends RequestHandler {
                     this.contr,
                     req,
                     res,
-                    this.sendHttpResponse
+                    this.sendHttpResponse,
                 ))
               ) {
                 return;
@@ -71,7 +71,7 @@ class MsgApi extends RequestHandler {
             } catch (err) {
               next(err);
             }
-          }
+          },
       );
 
       /*
@@ -99,7 +99,7 @@ class MsgApi extends RequestHandler {
                     this.contr,
                     req,
                     res,
-                    this.sendHttpResponse
+                    this.sendHttpResponse,
                 ))
               ) {
                 return;
@@ -118,7 +118,7 @@ class MsgApi extends RequestHandler {
             } catch (err) {
               next(err);
             }
-          }
+          },
       );
 
       /*
@@ -135,7 +135,7 @@ class MsgApi extends RequestHandler {
                 this.contr,
                 req,
                 res,
-                this.sendHttpResponse
+                this.sendHttpResponse,
             ))
           ) {
             return;
