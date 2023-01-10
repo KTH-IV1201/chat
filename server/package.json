@@ -6,8 +6,8 @@
   "license": "BSD-3-Clause",
   "main": "src/server.js",
   "scripts": {
-    "non-interactive-test": "node node_modules/jest/bin/jest.js --forceExit --detectOpenHandles --silent",
-    "test": "node node_modules/jest/bin/jest.js --runInBand --watchAll --detectOpenHandles --silent",
+    "non-interactive-test": "node node_modules/jest/bin/jest.js --forceExit --detectOpenHandles --silent --coverage",
+    "test": "node node_modules/jest/bin/jest.js --runInBand --watchAll --detectOpenHandles --silent --coverage",
     "start-dev": "NODE_ENV=development && node_modules/nodemon/bin/nodemon.js src/server",
     "start": "NODE_ENV=production && node_modules/nodemon/bin/nodemon.js src/server"
   },
