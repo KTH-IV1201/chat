@@ -1,9 +1,8 @@
 const request = require('supertest');
 const server = require('../src/server');
 
-afterAll(async (done) => {
+afterAll(async () => {
   await server.close();
-  done();
 });
 
 describe('basic route tests', () => {
