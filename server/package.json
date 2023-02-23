@@ -27,7 +27,7 @@
     "mariadb": "^3.0.2",
     "nodemon": "^2.0.4",
     "pg-promise": "^11.0.2",
-    "sequelize": "^6.0.0",
+    "sequelize": "^6.28.2",
     "verror": "^1.10.0"
   },
   "devDependencies": {
