@@ -30,7 +30,12 @@ The following frameworks are used.
 
 ## Installation
 
-Install node.js, clone this git repository and install all required npm packages by giving the command `npm install` in the `server` directory.
+1. Install node.js
+1. Clone this git repository
+1. Only for Windows users:
+   1. Change line 11 in `package.json` to`"start-dev": "SET NODE_ENV=development & nodemon src/server"`
+   1. Change line 12 in `package.json` to`"start": "SET NODE_ENV=production & nodemon src/server"`
+1. Install all required npm packages by giving the command `npm install` in the `server` directory.
 
 ## Start the Application
 
