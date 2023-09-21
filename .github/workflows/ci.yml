@@ -10,7 +10,7 @@ jobs:
   npm-inst:
     name: run-npm-test
     runs-on: ubuntu-latest
-    container: node:14.15.1-buster
+    container: node:18.x
 
     env:
       SERVER_HOST: localhost
