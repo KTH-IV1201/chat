@@ -21,7 +21,7 @@
     "cls-hooked": "^4.2.2",
     "cookie-parser": "^1.4.6",
     "dotenv-safe": "^8.2.0",
-    "express": "^4.20.0",
+    "express": "^4.21.2",
     "express-validator": "^7.0.1",
     "jsonwebtoken": "^9.0.2",
     "mariadb": "^3.2.2",
