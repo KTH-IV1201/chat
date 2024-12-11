@@ -38,11 +38,12 @@ jobs:
       - uses: actions/checkout@v2
 
       - run: npm ci
-        working-directory: ./server
+        working-directory: .
 
       - run: npm run non-interactive-test
-        working-directory: ./server
-        # Required to print log below, but flags run as passed even if there are failures.
+        working-directory: .
+        # Required to print log below, but also flags the execution as passed, 
+        # even if there are failures:
         # continue-on-error: true 
         
       # The log might contain more information about test failures.
